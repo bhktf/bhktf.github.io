@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BHKTF — Trip Portal 2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #000000;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        .portal-body {
+            background-color: #000000;
+            background-image: radial-gradient(circle at center, rgba(138, 43, 226, 0.18) 0%, #060606 70%);
+            font-family: 'Outfit', sans-serif;
+            color: #f8fafc;
+            width: 100%;
+            max-width: 1200px;
+            height: 720px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 20px 80px rgba(0,0,0,0.8);
+        }
+
+        /* Fixed Liquid Glass Navbar */
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 3rem;
+            background: rgba(10, 10, 10, 0.6);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: #a855f7;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-menu li {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+
+        .nav-menu li.active, .nav-menu li:hover {
+            color: #f8fafc;
+            text-shadow: 0 0 15px rgba(168, 85, 247, 0.6);
+        }
+
+        /* App Views Window */
+        .app-viewport {
+            flex-grow: 1;
+            padding: 2.5rem 3rem;
+            position: relative;
+            overflow-y: auto;
+        }
+
+        .app-view {
+            display: none;
+            animation: fadeIn 0.4s ease forwards;
+            height: 100%;
+        }
+
+        .app-view.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Core Components */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 1.75rem;
+        }
+
+        /* Countdown Grid styling */
+        .countdown-timer {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            margin: 2.5rem 0;
+        }
+
+        .timer-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(168, 85, 247, 0.05);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            border-radius: 12px;
+            padding: 1.25rem;
+            min-width: 100px;
+        }
+
+        .timer-box .val {
+            font-size: 2.75rem;
+            font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+            color: #f8fafc;
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .timer-box .lbl {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            color: #a855f7;
+            letter-spacing: 2px;
+        }
+
+        /* Horizontal Itinerary Timeline */
+        .timeline-container {
+            display: flex;
+            gap: 1.25rem;
+            overflow-x: auto;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .timeline-card {
+            flex: 0 0 280px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
+
+        .timeline-card h4 {
+            color: #a855f7;
+            margin-top: 0;
+            margin-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 0.5rem;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .event-line {
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        .event-time {
+            font-weight: 700;
+            color: #e2e8f0;
+            margin-right: 0.5rem;
+        }
+
+        /* Checklist & Lock Mechanics */
+        .checklist-wrapper {
+            position: relative;
+            height: 100%;
+        }
+
+        .lock-blur {
+            filter: blur(12px);
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .lock-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(6, 6, 6, 0.75);
+            backdrop-filter: blur(4px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            border-radius: 16px;
+        }
+
+        /* Posts Engine Layout */
+        .posts-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.3fr;
+            gap: 2rem;
+            height: 100%;
+        }
+
+        .composer-select {
+            width: 100%;
+            background: #111;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 0.75rem;
+            border-radius: 8px;
+            color: #fff;
+            margin-bottom: 1rem;
+            font-family: inherit;
+        }
+
+        .composer-textarea {
+            width: 100%;
+            height: 140px;
+            background: #111;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 0.75rem;
+            border-radius: 8px;
+            color: #fff;
+            resize: none;
+            margin-bottom: 1rem;
+            font-family: inherit;
+        }
+
+        .btn-action {
+            background: #a855f7;
+            color: #000;
+            border: none;
+            padding: 0.75rem 2rem;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-action:hover {
+            background: #b975ff;
+            box-shadow: 0 0 15px #a855f7;
+        }
+
+        .wall-feed {
+            height: 300px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding-right: 0.5rem;
+        }
+
+        .msg-bubble {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        .msg-author {
+            color: #a855f7;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .fineprint {
+            color: #475569;
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="portal-body">
+    <nav class="nav-bar">
+        <div class="nav-logo">BHKTF</div>
+        <ul class="nav-menu">
+            <li class="nav-tab active" onclick="switchView('home-view', this)">Home</li>
+            <li class="nav-tab" onclick="switchView('itinerary-view', this)">Itinerary</li>
+            <li class="nav-tab" onclick="switchView('checklist-view', this)">Checklist</li>
+            <li class="nav-tab" onclick="switchView('posts-view', this)">Posts</li>
+        </ul>
+    </nav>
+
+    <div class="app-viewport">
+
+        <div id="home-view" class="app-view active" style="justify-content: center; align-items: center; text-align: center;">
+            <h1 style="font-size: 5rem; font-family: 'Space Grotesk'; letter-spacing: -3px; margin: 0;">BHKTF</h1>
+            <p style="color: #94a3b8; font-size: 1.2rem; letter-spacing: 2px; text-transform: uppercase; margin: 0.5rem 0 0 0;">Rhine & Moselle Trip Portal</p>
+            
+            <div class="countdown-timer">
+                <div class="timer-box"><div class="val" id="time-w">00</div><div class="lbl">Weeks</div></div>
+                <div class="timer-box"><div class="val" id="time-d">00</div><div class="lbl">Days</div></div>
+                <div class="timer-box"><div class="val" id="time-h">00</div><div class="lbl">Hours</div></div>
+                <div class="timer-box"><div class="val" id="time-m">00</div><div class="lbl">Mins</div></div>
+                <div class="timer-box"><div class="val" id="time-s">00</div><div class="lbl">Secs</div></div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1rem;">
+                <button class="btn-action" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1);" onclick="document.querySelectorAll('.nav-tab')[1].click()">Itinerary</button>
+                <button class="btn-action" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1);" onclick="document.querySelectorAll('.nav-tab')[2].click()">Checklist</button>
+                <button class="btn-action" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1);" onclick="document.querySelectorAll('.nav-tab')[3].click()">Posts</button>
+            </div>
+        </div>
+
+        <div id="itinerary-view" class="app-view">
+            <h2 style="font-family: 'Space Grotesk'; margin-top: 0; margin-bottom: 1.5rem;">Master Itinerary</h2>
+            <div class="timeline-container">
+                <div class="timeline-card">
+                    <h4>Day 1 — Sun 5th July</h4>
+                    <div class="event-line"><span class="event-time">15:00</span> Meet at school</div>
+                    <div class="event-line"><span class="event-time">15:30</span> Depart coach to Dover</div>
+                    <div class="event-line"><span class="event-time">22:20</span> Ferry Check-in</div>
+                </div>
+                <div class="timeline-card">
+                    <h4>Day 2 — Mon 6th July</h4>
+                    <div class="event-line"><span class="event-time">02:50</span> Arrive Calais (FR Time)</div>
+                    <div class="event-line"><span class="event-time">09:00</span> Cologne Cathedral visit</div>
+                    <div class="event-line"><span class="event-time">15:00</span> Chocolate Museum 🍫</div>
+                    <div class="event-line"><span class="event-time">18:00</span> Hostel Check-in</div>
+                </div>
+                <div class="timeline-card">
+                    <h4>Day 3 — Tue 7th July</h4>
+                    <div class="event-line"><span class="event-time">10:00</span> Boppard Cable Car Lift</div>
+                    <div class="event-line"><span class="event-time">12:45</span> Rhine River Cruise 🚢</div>
+                    <div class="event-line"><span class="event-time">19:00</span> Group Bowling Night</div>
+                </div>
+                <div class="timeline-card">
+                    <h4>Day 4 — Wed 8th July</h4>
+                    <div class="event-line"><span class="event-time">08:30</span> Phantasialand Theme Park 🎢</div>
+                    <div class="event-line"><span class="event-time">18:30</span> Evening Meal & Packing</div>
+                </div>
+                <div class="timeline-card">
+                    <h4>Day 5 — Thu 9th July</h4>
+                    <div class="event-line"><span class="event-time">06:30</span> Vacate Rooms</div>
+                    <div class="event-line"><span class="event-time">15:55</span> Ferry leaves Calais</div>
+                    <div class="event-line"><span class="event-time">23:00</span> Return Knaresborough</div>
+                </div>
+            </div>
+            <div class="glass-card" style="display: flex; align-items: center; gap: 2rem; margin-top: auto;">
+                <div style="flex: 1;">
+                    <h3 style="margin-top:0; color:#a855f7;">Phantasialand Preview</h3>
+                    <p style="margin:0; font-size:0.95rem; color:#94a3b8;">Get ready to hit Taron—the world's fastest multi-launch coaster situated inside the Klugheim realm.</p>
+                    <div class="fineprint">from reddit.com/r/rollercoasters</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="checklist-view" class="app-view">
+            <h2 style="font-family: 'Space Grotesk'; margin-top: 0; margin-bottom: 1.5rem;">Packing Checklist</h2>
+            <div class="checklist-wrapper">
+                
+                <div id="checklist-lock-layer" class="lock-overlay">
+                    <i class="fa-solid fa-lock" style="font-size: 3.5rem; color: #a855f7; margin-bottom: 1rem;"></i>
+                    <h3 style="margin:0; color:#fff;">Section Locked</h3>
+                    <p style="margin: 0.25rem 0 0 0; font-size: 0.95rem; color: #94a3b8;">Unlocks automatically exactly 7 days before departure.</p>
+                </div>
+
+                <div id="checklist-content-layer" class="lock-blur" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <div class="glass-card">
+                        <h3 style="margin-top:0; color:#a855f7;"><i class="fa-solid fa-suitcase"></i> Essential Packing</h3>
+                        <p style="margin:0 0 0.5rem 0; font-size:0.9rem; color:#94a3b8;"><input type="checkbox" disabled> Refillable water bottle</p>
+                        <p style="margin:0 0 0.5rem 0; font-size:0.9rem; color:#94a3b8;"><input type="checkbox" disabled> European plug adapter</p>
+                        <p style="margin:0 0 0.5rem 0; font-size:0.9rem; color:#94a3b8;"><input type="checkbox" disabled> Comfortable walking shoes</p>
+                        <p style="margin:0 0 0.5rem 0; font-size:0.9rem; color:#94a3b8;"><input type="checkbox" disabled> Passport & ID copies</p>
+                        <p style="margin:0 0 0.5rem 0; font-size:0.9rem; color:#94a3b8;"><input type="checkbox" disabled> €60 cash recommended</p>
+                    </div>
+                    <div class="glass-card">
+                        <h3 style="margin-top:0; color: #f43f5e;"><i class="fa-solid fa-ban"></i> Coach Bans</h3>
+                        <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color:#94a3b8;">Strictly prohibited on board by coach operators:</p>
+                        <ul style="margin: 0; padding-left: 1.25rem; color: #fda4af; font-size:0.9rem; line-height:1.6;">
+                            <li>Chewing gum</li>
+                            <li>Glass bottles</li>
+                            <li>Fizzy drinks</li>
+                            <li>Strong smelling snacks</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="posts-view" class="app-view">
+            <h2 style="font-family: 'Space Grotesk'; margin-top: 0; margin-bottom: 1.5rem;">Group Wall</h2>
+            <div class="posts-layout">
+                <div class="glass-card" style="display:flex; flex-direction:column;">
+                    <h3 style="margin-top:0; color:#a855f7;">Write Post</h3>
+                    <select id="post-author-select" class="composer-select">
+                        <option value="Alex">Alex</option>
+                        <option value="Stanley">Stanley</option>
+                        <option value="Joseph">Joseph</option>
+                        <option value="Archie">Archie</option>
+                    </select>
+                    <textarea id="post-text-input" class="composer-textarea" placeholder="Type an update to the crew..."></textarea>
+                    <button class="btn-action" style="width: 100%; margin-top:auto;" onclick="addCustomPost()">Publish</button>
+                </div>
+                <div class="glass-card" style="display:flex; flex-direction:column;">
+                    <h3 style="margin-top:0; color:#a855f7;">Live Feed</h3>
+                    <div id="wall-feed-box" class="wall-feed">
+                        <div class="msg-bubble">
+                            <span class="msg-author">Alex</span>
+                            <p style="margin: 0.25rem 0 0 0; font-size: 0.95rem; color:#e2e8f0;">Liquid glass layout is fully running. Let's get packing lists tested.</p>
+                        </div>
+                        <div class="msg-bubble">
+                            <span class="msg-author">Stanley</span>
+                            <p style="margin: 0.25rem 0 0 0; font-size: 0.95rem; color:#e2e8f0;">Has anyone sorted out mobile data roaming plans for Germany yet?</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function switchView(viewId, tabElement) {
+        document.querySelectorAll('.app-view').forEach(view => view.classList.remove('active'));
+        document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+        
+        document.getElementById(viewId).classList.add('active');
+        tabElement.classList.add('active');
+    }
+
+    const departureTime = new Date("July 5, 2026 15:00:00").getTime();
+
+    function runtimeEngine() {
+        const now = new Date().getTime();
+        const gap = departureTime - now;
+
+        const msSec = 1000;
+        const msMin = msSec * 60;
+        const msHr = msMin * 60;
+        const msDay = msHr * 24;
+        const msWk = msDay * 7;
+
+        const weeks = Math.floor(gap / msWk);
+        const days = Math.floor((gap % msWk) / msDay);
+        const hours = Math.floor((gap % msDay) / msHr);
+        const minutes = Math.floor((gap % msHr) / msMin);
+        const seconds = Math.floor((gap % msMin) / msSec);
+
+        if (gap < 0) {
+            document.getElementById("time-w").innerText = "00";
+            document.getElementById("time-d").innerText = "00";
+            document.getElementById("time-h").innerText = "00";
+            document.getElementById("time-m").innerText = "00";
+            document.getElementById("time-s").innerText = "00";
+        } else {
+            document.getElementById("time-w").innerText = weeks.toString().padStart(2, '0');
+            document.getElementById("time-d").innerText = days.toString().padStart(2, '0');
+            document.getElementById("time-h").innerText = hours.toString().padStart(2, '0');
+            document.getElementById("time-m").innerText = minutes.toString().padStart(2, '0');
+            document.getElementById("time-s").innerText = seconds.toString().padStart(2, '0');
+        }
+
+        const totalDaysRemaining = gap / msDay;
+        if (totalDaysRemaining <= 7) {
+            const lockLayer = document.getElementById("checklist-lock-layer");
+            const contentLayer = document.getElementById("checklist-content-layer");
+            if (lockLayer) lockLayer.style.display = "none";
+            if (contentLayer) contentLayer.classList.remove("lock-blur");
+        }
+    }
+
+    runtimeEngine();
+    setInterval(runtimeEngine, 1000);
+
+    function addCustomPost() {
+        const author = document.getElementById("post-author-select").value;
+        const msg = document.getElementById("post-text-input").value.trim();
+        
+        if(msg === "") return;
+
+        const newPost = document.createElement("div");
+        newPost.className = "msg-bubble";
+        newPost.innerHTML = `<span class="msg-author">${author}</span><p style="margin: 0.25rem 0 0 0; font-size: 0.95rem; color:#e2e8f0;">${msg}</p>`;
+        
+        const feed = document.getElementById("wall-feed-box");
+        feed.insertBefore(newPost, feed.firstChild);
+        
+        document.getElementById("post-text-input").value = "";
+    }
+</script>
+</body>
+</html>
