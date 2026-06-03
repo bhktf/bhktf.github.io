@@ -870,11 +870,12 @@
 <script>
     const FIREBASE_DB_URL = "https://bhktf-portal-default-rtdb.europe-west1.firebasedatabase.app/";
 
+    // Updated passkeys for testing publicized checklists
     const DEFAULT_PASSKEYS = {
         "Alex": "1234",
-        "Archie": "5678",
-        "Joseph": "9012",
-        "Stanley": "3456"
+        "Archie": "5338",
+        "Joseph": "1234",
+        "Stanley": "1234"
     };
 
     const RECOMMENDED_PRESETS = [
@@ -1052,7 +1053,7 @@
             checkAuthenticationState();
 
             setTimeout(() => {
-                if (suppliedPass === "1234") {
+                if (suppliedPass === "1234" && selectedName !== "Archie") {
                     const newPin = prompt("⚠️ SECURITY UPDATE REQUIRED:\nYour current password is set to the default '1234'. Please enter a new 4-digit PIN to secure your device profile:");
                     if (newPin && newPin.trim().length === 4 && !isNaN(newPin)) {
                         localStorage.setItem(`bhktf_pin_${selectedName}`, newPin.trim());
@@ -1124,8 +1125,12 @@
 
         workspace.innerHTML = "";
         list.forEach((node, index) => {
+            const rowContainer = document.createElement("div");
+            rowContainer.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 0.25rem 0;";
+
             const label = document.createElement("label");
             label.className = "check-item";
+            label.style.cssText = "margin: 0; display: flex; align-items: center; gap: 0.75rem; flex-grow: 1;";
             
             const fromSourceHtml = node.fromUser ? `<span class="from-tag">[from ${node.fromUser}]</span>` : "";
             const disabledAttr = isLocked ? "disabled" : "";
@@ -1136,7 +1141,20 @@
                 <span style="${node.checked ? 'text-decoration: line-through; color: #475569;' : ''}">${node.title}</span>
                 ${fromSourceHtml}
             `;
-            workspace.appendChild(label);
+
+            rowContainer.appendChild(label);
+
+            // Append delete button if the workspace is unlocked
+            if (!isLocked) {
+                const deleteBtn = document.createElement("button");
+                deleteBtn.className = "btn-delete";
+                deleteBtn.style.cssText = "padding: 0.25rem 0.5rem; background: transparent; border: none; font-size: 0.9rem;";
+                deleteBtn.innerHTML = `<i class="fa-solid fa-trash-can"></i>`;
+                deleteBtn.onclick = function() { removeChecklistItem(index); };
+                rowContainer.appendChild(deleteBtn);
+            }
+
+            workspace.appendChild(rowContainer);
         });
 
         if (isLocked) {
@@ -1146,6 +1164,15 @@
             document.getElementById("lockin-final-btn").style.background = "#27272a";
             document.getElementById("lockin-final-btn").style.cursor = "not-allowed";
         }
+    }
+
+    function removeChecklistItem(index) {
+        if (isUserLockedIn(activeUser)) return;
+        const list = getUserChecklistData(activeUser);
+        list.splice(index, 1);
+        saveUserChecklistData(activeUser, list);
+        renderPersonalChecklistWorkspace();
+        renderRecommendationsRack();
     }
 
     function renderRecommendationsRack() {
@@ -1286,7 +1313,7 @@
         const target = globalSharedDirectories[username];
         if (!target) return;
 
-        document.getElementById("viewer-title").innerText = `${target.user}'s Checklist Checklist`;
+        document.getElementById("viewer-title").innerText = `${target.user}'s Checklist`;
         const container = document.getElementById("viewer-content-box");
         container.innerHTML = "";
 
