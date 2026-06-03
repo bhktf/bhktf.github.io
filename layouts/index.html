@@ -505,6 +505,32 @@
             border-color: rgba(168, 85, 247, 0.3);
         }
 
+        /* Administrative Core Overrides Dashboard UI Styles */
+        .admin-box-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            text-align: left;
+            margin-top: 1rem;
+        }
+        .admin-card-inner {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
+        .admin-select, .admin-input-txt {
+            width: 100%;
+            background: #111;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 0.5rem;
+            border-radius: 6px;
+            font-family: inherit;
+            margin-bottom: 0.75rem;
+            box-sizing: border-box;
+        }
+
         /* Mobile Adjustments */
         @media (max-width: 768px) {
             body {
@@ -594,7 +620,7 @@
                 letter-spacing: 1px;
             }
 
-            .checklist-grid, .posts-layout {
+            .checklist-grid, .posts-layout, .admin-box-grid {
                 grid-template-columns: 1fr;
                 gap: 1.5rem;
             }
@@ -647,6 +673,54 @@
         <div id="viewer-content-box" style="max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem;">
             </div>
         <button class="btn-action" style="width: 100%; background: rgba(255,255,255,0.1); color:#fff;" onclick="toggleViewerModal(false)">Close Inspector</button>
+    </div>
+</div>
+
+<div id="admin-backdoor-modal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 650px; border-color: #ec4899; box-shadow: 0 0 60px rgba(236, 72, 153, 0.2);">
+        <button class="modal-close" onclick="window.location.hash=''; toggleAdminPanel(false);">&times;</button>
+        <i class="fa-solid fa-terminal" style="font-size: 2.5rem; color: #ec4899; margin-bottom: 0.5rem;"></i>
+        <h3 style="margin:0; font-family:'Space Grotesk'; color:#fff; letter-spacing:1px;">System Override Terminal</h3>
+        <p style="margin: 0 0 1.5rem 0; font-size: 0.85rem; color: #64748b;">Live client-side variable mutation environment.</p>
+
+        <div class="admin-box-grid">
+            <div class="admin-card-inner">
+                <h4 style="margin:0 0 0.75rem 0; color:#ec4899;"><i class="fa-solid fa-key"></i> Passkey Override</h4>
+                <label style="font-size:0.8rem; color:#94a3b8; display:block; margin-bottom:0.25rem;">Select Target Target:</label>
+                <select id="adm-pass-user" class="admin-select">
+                    <option value="Alex">Alex</option>
+                    <option value="Archie">Archie</option>
+                    <option value="Joseph">Joseph</option>
+                    <option value="Stanley">Stanley</option>
+                </select>
+                <input type="text" id="adm-pass-val" class="admin-input-txt" placeholder="Enter new 4-digit PIN" maxlength="4">
+                <button class="btn-action" style="background:#ec4899; width:100%; font-size:0.8rem; padding:0.5rem;" onclick="adminOverridePassword()">Commit PIN Update</button>
+                <button class="btn-action" style="background:rgba(255,255,255,0.05); color:#fff; width:100%; font-size:0.75rem; padding:0.4rem; margin-top:0.5rem;" onclick="adminResetAllDefaultPasswords()">Reset All Except Archie to 1234</button>
+            </div>
+
+            <div class="admin-card-inner">
+                <h4 style="margin:0 0 0.75rem 0; color:#34d399;"><i class="fa-solid fa-user-lock"></i> Matrix Lock States</h4>
+                <label style="font-size:0.8rem; color:#94a3b8; display:block; margin-bottom:0.25rem;">Target Profile Handle:</label>
+                <select id="adm-lock-user" class="admin-select">
+                    <option value="Alex">Alex</option>
+                    <option value="Archie">Archie</option>
+                    <option value="Joseph">Joseph</option>
+                    <option value="Stanley">Stanley</option>
+                </select>
+                <div style="display:flex; gap:0.5rem; margin-top:1.5rem;">
+                    <button class="btn-action" style="background:#ef4444; color:#fff; flex:1; font-size:0.8rem; padding:0.5rem;" onclick="adminSetLockState(true)">Force Lock</button>
+                    <button class="btn-action" style="background:#22c55e; color:#fff; flex:1; font-size:0.8rem; padding:0.5rem;" onclick="adminSetLockState(false)">Force Unlock</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-card-inner" style="margin-top:1.5rem; text-align:left;">
+            <h4 style="margin:0 0 0.75rem 0; color:#38bdf8;"><i class="fa-solid fa-clock"></i> Countdown Target Calibration</h4>
+            <div style="display:flex; gap:0.75rem; align-items:center;">
+                <input type="text" id="adm-date-input" class="admin-input-txt" style="margin:0;" placeholder="e.g., July 5, 2026 15:00:00">
+                <button class="btn-action" style="background:#38bdf8; font-size:0.8rem; padding:0.5rem 1.25rem; white-space:nowrap;" onclick="adminOverrideCountdownDate()">Update Clock</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -871,7 +945,7 @@
     const FIREBASE_DB_URL = "https://bhktf-portal-default-rtdb.europe-west1.firebasedatabase.app/";
 
     // Updated passkeys for testing publicized checklists
-    const DEFAULT_PASSKEYS = {
+    let DEFAULT_PASSKEYS = {
         "Alex": "1234",
         "Archie": "5338",
         "Joseph": "1234",
@@ -900,6 +974,9 @@
     let postCollection = [];
     let globalSharedDirectories = {}; // Object tracking global publicized states
     let isShareSelectionMode = false;
+    
+    // Calendar Config Variable to enable administrative time warps
+    let targetCountdownString = localStorage.getItem("bhktf_override_date") || "July 5, 2026 15:00:00";
 
     function switchView(viewId, tabElement) {
         document.querySelectorAll('.app-view').forEach(view => view.classList.remove('active'));
@@ -928,8 +1005,8 @@
     }
 
     // Dynamic Live Countdown Engine
-    const departureTime = new Date("July 5, 2026 15:00:00").getTime();
     function runtimeEngine() {
+        const departureTime = new Date(targetCountdownString).getTime();
         const now = new Date().getTime();
         const gap = departureTime - now;
 
@@ -1157,12 +1234,19 @@
             workspace.appendChild(rowContainer);
         });
 
+        const finalBtn = document.getElementById("lockin-final-btn");
         if (isLocked) {
             document.getElementById("add-item-shortcut-btn").setAttribute("disabled", "true");
             document.getElementById("add-item-shortcut-btn").style.opacity = "0.3";
-            document.getElementById("lockin-final-btn").innerText = "🔒 Locked & Confirmed";
-            document.getElementById("lockin-final-btn").style.background = "#27272a";
-            document.getElementById("lockin-final-btn").style.cursor = "not-allowed";
+            finalBtn.innerText = "🔒 Locked & Confirmed";
+            finalBtn.style.background = "#27272a";
+            finalBtn.style.cursor = "not-allowed";
+        } else {
+            document.getElementById("add-item-shortcut-btn").removeAttribute("disabled");
+            document.getElementById("add-item-shortcut-btn").style.opacity = "1";
+            finalBtn.innerText = "Lock In Checklist";
+            finalBtn.style.background = "linear-gradient(90deg, #b91c1c, #991b1b)";
+            finalBtn.style.cursor = "pointer";
         }
     }
 
@@ -1545,6 +1629,71 @@
         } else {
             alert("Permission Denied: You can only delete your own wall posts!");
         }
+    }
+
+    /* ==========================================================================
+       SECRET ADMINISTRATIVE BACKDOOR PANEL CONTROLLERS
+       ========================================================================== */
+    function toggleAdminPanel(show) {
+        const adminModal = document.getElementById("admin-backdoor-modal");
+        adminModal.style.display = show ? "flex" : "none";
+        if (show) {
+            document.getElementById("adm-date-input").value = targetCountdownString;
+        }
+    }
+
+    // Listens for hash changes in the URL address bar (e.g. index.html#admin)
+    function handleHashRoutingCheck() {
+        if (window.location.hash === "#admin") {
+            toggleAdminPanel(true);
+        } else {
+            toggleAdminPanel(false);
+        }
+    }
+    window.addEventListener("hashchange", handleHashRoutingCheck);
+    window.addEventListener("DOMContentLoaded", handleHashRoutingCheck);
+
+    function adminOverridePassword() {
+        const user = document.getElementById("adm-pass-user").value;
+        const pin = document.getElementById("adm-pass-val").value.trim();
+        
+        if (pin.length !== 4 || isNaN(pin)) {
+            alert("Administrative error: Passkey mutations must consist of exactly 4 numeric characters.");
+            return;
+        }
+        
+        localStorage.setItem(`bhktf_pin_${user}`, pin);
+        alert(`Successfully mutated master security profile. ${user}'s PIN is now: ${pin}`);
+        document.getElementById("adm-pass-val").value = "";
+        checkAuthenticationState();
+    }
+
+    function adminResetAllDefaultPasswords() {
+        const users = ["Alex", "Joseph", "Stanley"];
+        users.forEach(u => {
+            localStorage.setItem(`bhktf_pin_${u}`, "1234");
+        });
+        alert("System wide passkey reset executed. Testing variables restored to 1234 (Archie preserved).");
+        checkAuthenticationState();
+    }
+
+    function adminSetLockState(shouldLock) {
+        const user = document.getElementById("adm-lock-user").value;
+        localStorage.setItem(`bhktf_locked_${user}`, shouldLock ? "true" : "false");
+        alert(`Forcefully calibrated constraint array logic. ${user}'s workspace lock state set to: ${shouldLock}`);
+        checkAuthenticationState();
+    }
+
+    function adminOverrideCountdownDate() {
+        const dateStr = document.getElementById("adm-date-input").value.trim();
+        if (isNaN(Date.parse(dateStr))) {
+            alert("Invalid date parameters! Use format: Month DD, YYYY HH:MM:SS");
+            return;
+        }
+        targetCountdownString = dateStr;
+        localStorage.setItem("bhktf_override_date", dateStr);
+        alert(`Countdown system re-calibrated successfully to target anchor: ${dateStr}`);
+        runtimeEngine();
     }
 
     // Pull database updates periodically every 7 seconds automatically
