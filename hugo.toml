@@ -1,38 +1,16 @@
 baseURL = "https://bhktf.github.io/"
 languageCode = "en-us"
-title = "BHKTF"
+title = "Rhine & Moselle Trip 2026"
 
 theme = "PaperMod"
 themesDir = "themes"
 
 [params]
     env = "production"
-    title = "BHKTF"
-    description = "My personal site and project archive."
-    
-    # Theme settings
-    defaultTheme = "dark" # Force dark mode right away
-    disableThemeToggle = false
-    ShowReadingTime = true
-    ShowShareButtons = false
-    ShowCodeCopyButtons = true
+    title = "Rhine & Moselle 2026"
+    description = "Official trip portal for Alex, Archie, Joseph, and Stanley."
+    defaultTheme = "dark"
+    disableThemeToggle = true
 
-    # THIS WIPES THE HOMEPAGE TEMPLATE CARD:
     [params.profileMode]
         enabled = false
-
-# Clean, simple top header links
-[[menu.main]]
-    name = "Home"
-    url = "/"
-    weight = 5
-
-[[menu.main]]
-    name = "Blog"
-    url = "posts/"
-    weight = 10
-
-[[menu.main]]
-    name = "Tags"
-    url = "tags/"
-    weight = 20
