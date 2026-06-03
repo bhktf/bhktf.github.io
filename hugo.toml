@@ -1,38 +1,34 @@
-baseURL = "https://yourusername.github.io/" # Change this to your GitHub Pages URL
+baseURL = "https://bhktf.github.io/"
 languageCode = "en-us"
-title = "My Digital Garden"
+title = "BHKTF"
+
 theme = "PaperMod"
+themesDir = "themes"
 
 [params]
     env = "production"
-    title = "My Digital Garden"
-    description = "Welcome to my personal corner of the internet."
+    title = "BHKTF"
+    description = "My personal site and project archive."
     
-    # Appearance
-    defaultTheme = "auto" # automatically switches dark/light mode
+    # Theme settings
+    defaultTheme = "dark" # Force dark mode right away
+    disableThemeToggle = false
     ShowReadingTime = true
-    ShowShareButtons = true
+    ShowShareButtons = false
     ShowCodeCopyButtons = true
 
-    # Home Page Profile Mode
+    # THIS WIPES THE HOMEPAGE TEMPLATE CARD:
     [params.profileMode]
-        enabled = true
-        title = "Hi there, I'm [Your Name] 👋"
-        subtitle = "Developer, writer, and creator. Building things with code."
-        imageUrl = "https://images.unsplash.com/photo-1534528741775-53994a69daeb" # Placeholder bio pic
-        imageWidth = 120
-        imageHeight = 120
-        
-        [[params.profileMode.buttons]]
-            name = "Read my Blog"
-            url = "posts/"
-        [[params.profileMode.buttons]]
-            name = "GitHub"
-            url = "https://github.com/yourusername"
+        enabled = false
 
-# Top Navigation Menu
+# Clean, simple top header links
 [[menu.main]]
-    name = "Posts"
+    name = "Home"
+    url = "/"
+    weight = 5
+
+[[menu.main]]
+    name = "Blog"
     url = "posts/"
     weight = 10
 
