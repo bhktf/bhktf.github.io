@@ -1,13 +1,13 @@
 baseURL = "https://bhktf.github.io/"
 languageCode = "en-us"
-title = "Rhine & Moselle Trip 2026"
+title = "BHKTF"
 
 theme = "PaperMod"
 themesDir = "themes"
 
 [params]
     env = "production"
-    title = "Rhine & Moselle 2026"
+    title = "BHKTF"
     description = "Official trip portal for Alex, Archie, Joseph, and Stanley."
     defaultTheme = "dark"
     disableThemeToggle = true
