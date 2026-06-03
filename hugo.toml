@@ -2,13 +2,11 @@ baseURL = "https://bhktf.github.io/"
 languageCode = "en-us"
 title = "BHKTF"
 
-# 1. Bypass Markdown sanitization so your custom HTML, CSS, and JS actually execute
 [markup]
   [markup.goldmark]
     [markup.goldmark.renderer]
       unsafe = true
 
-# 2. Minimalist parameters to prevent base theme interference
 [params]
     env = "production"
     title = "BHKTF"
