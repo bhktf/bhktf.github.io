@@ -474,7 +474,7 @@
             }
 
             .nav-auth-btn {
-                display: none; /* Handled gracefully on internal screens for small phones */
+                display: none;
             }
 
             .app-viewport {
@@ -731,12 +731,19 @@
 <script>
     const FIREBASE_DB_URL = "https://bhktf-portal-default-rtdb.europe-west1.firebasedatabase.app/";
 
-    const ROSTER_PASSKEYS = {
+    // Base master configurations
+    const DEFAULT_PASSKEYS = {
         "Alex": "1234",
         "Archie": "5678",
         "Joseph": "9012",
         "Stanley": "3456"
     };
+
+    // Helper utility to grab active custom passkeys out of persistent storage
+    function getPasskeyForUser(username) {
+        const customKey = localStorage.getItem(`bhktf_pin_${username}`);
+        return customKey ? customKey : DEFAULT_PASSKEYS[username];
+    }
 
     let activeUser = localStorage.getItem("bhktf_active_user") || null;
     let postCollection = [];
@@ -801,18 +808,15 @@
         const publishPostBtn = document.getElementById("publish-post-btn");
 
         if (activeUser) {
-            // Lock out individual access blocks
             if (lockLayer) lockLayer.style.display = "none";
             if (contentLayer) contentLayer.classList.remove("lock-blur");
             
-            // Adjust Composer Text Engine fields
             authorBadge.innerText = `Posting as: ${activeUser}`;
             authorBadge.style.color = "#a855f7";
             postTextInput.removeAttribute("disabled");
             publishPostBtn.removeAttribute("disabled");
             wallInlineAuth.style.display = "none";
 
-            // Top navigation and index layouts updates
             welcomeUser.innerText = `Logged in as ${activeUser}`;
             navAuthTrigger.innerText = "Sign Out";
             navAuthTrigger.style.borderColor = "rgba(239, 68, 68, 0.4)";
@@ -859,22 +863,37 @@
         } else if (sourceContext === 'wall') {
             selectedName = document.getElementById("wall-username").value;
             suppliedPass = document.getElementById("wall-passphrase").value;
-        } else { // Modal target source window configuration mapping
+        } else { 
             selectedName = document.getElementById("modal-username").value;
             suppliedPass = document.getElementById("modal-passphrase").value;
         }
 
-        if (ROSTER_PASSKEYS[selectedName] === suppliedPass) {
+        const validPasskey = getPasskeyForUser(selectedName);
+
+        if (validPasskey === suppliedPass) {
             activeUser = selectedName;
             localStorage.setItem("bhktf_active_user", activeUser);
             
-            // Clean out target reference inputs safely
             document.getElementById("auth-passphrase").value = "";
             document.getElementById("modal-passphrase").value = "";
             document.getElementById("wall-passphrase").value = "";
             
             toggleAuthModal(false);
             checkAuthenticationState();
+
+            // Password enforcement checklist logic
+            setTimeout(() => {
+                if (suppliedPass === "1234") {
+                    const newPin = prompt("⚠️ SECURITY UPDATE REQUIRED:\nYour current password is set to the default '1234'. Please enter a new 4-digit PIN to secure your device profile:");
+                    if (newPin && newPin.trim().length === 4 && !isNaN(newPin)) {
+                        localStorage.setItem(`bhktf_pin_${selectedName}`, newPin.trim());
+                        alert("🎉 PIN updated successfully! Use your new PIN next time you log in.");
+                    } else {
+                        alert("Invalid entry. The default PIN remains active until changed.");
+                    }
+                }
+            }, 500);
+
         } else {
             alert("Invalid 4-Digit Passphrase! Try again.");
             document.getElementById("auth-passphrase").value = "";
