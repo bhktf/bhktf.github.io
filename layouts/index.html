@@ -58,6 +58,12 @@
             color: #a855f7;
         }
 
+        .nav-right-container {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
         .nav-menu {
             display: flex;
             gap: 2rem;
@@ -85,6 +91,26 @@
         .nav-menu li.active, .nav-menu li:hover {
             color: #f8fafc;
             text-shadow: 0 0 15px rgba(168, 85, 247, 0.6);
+        }
+
+        .nav-auth-btn {
+            background: rgba(168, 85, 247, 0.1);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            color: #a855f7;
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-auth-btn:hover {
+            background: #a855f7;
+            color: #000;
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
         }
 
         /* App Views Window */
@@ -244,6 +270,40 @@
             width: 200px;
         }
 
+        /* Modal Sign In Screen Styling */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-box {
+            background: #0a0a0a;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            box-shadow: 0 0 50px rgba(168, 85, 247, 0.15);
+            padding: 2.5rem;
+            border-radius: 20px;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem; right: 1.25rem;
+            background: transparent;
+            border: none;
+            color: #64748b;
+            font-size: 1.25rem;
+            cursor: pointer;
+        }
+
         /* Posts Engine Layout */
         .posts-layout {
             display: grid;
@@ -389,6 +449,11 @@
                 display: none;
             }
 
+            .nav-right-container {
+                width: 100%;
+                justify-content: space-between;
+            }
+
             .nav-menu {
                 width: 100%;
                 justify-content: space-around;
@@ -406,6 +471,10 @@
             .nav-menu li i {
                 display: block;
                 font-size: 1.25rem;
+            }
+
+            .nav-auth-btn {
+                display: none; /* Handled gracefully on internal screens for small phones */
             }
 
             .app-viewport {
@@ -456,15 +525,38 @@
 </head>
 <body>
 
+<div id="auth-modal" class="modal-overlay">
+    <div class="modal-box">
+        <button class="modal-close" onclick="toggleAuthModal(false)">&times;</button>
+        <i class="fa-solid fa-user-shield" style="font-size: 2.5rem; color: #a855f7; margin-bottom: 0.75rem;"></i>
+        <h3 style="margin: 0 0 0.5rem 0; font-family: 'Space Grotesk';">Identity Portal</h3>
+        <p style="margin: 0 0 1.5rem 0; font-size: 0.9rem; color: #94a3b8;">Enter crew handle and pin to authorize this device.</p>
+        
+        <div style="display: flex; flex-direction: column; align-items: center;">
+            <select id="modal-username" class="auth-input" style="width: 100%; max-width: 240px;">
+                <option value="Alex">Alex</option>
+                <option value="Archie">Archie</option>
+                <option value="Joseph">Joseph</option>
+                <option value="Stanley">Stanley</option>
+            </select>
+            <input type="password" id="modal-passphrase" class="auth-input" style="width: 100%; max-width: 240px; letter-spacing: 6px;" placeholder="••••" maxlength="4" pattern="[0-9]*" inputmode="numeric">
+            <button class="btn-action" style="width: 100%; max-width: 240px;" onclick="authenticateUser('modal')">Sign In</button>
+        </div>
+    </div>
+</div>
+
 <div class="portal-body">
     <nav class="nav-bar">
         <div class="nav-logo">BHKTF</div>
-        <ul class="nav-menu">
-            <li class="nav-tab active" onclick="switchView('home-view', this)"><i class="fa-solid fa-house"></i>Home</li>
-            <li class="nav-tab" onclick="switchView('itinerary-view', this)"><i class="fa-solid fa-map-location-dot"></i>Itinerary</li>
-            <li class="nav-tab" onclick="switchView('checklist-view', this)"><i class="fa-solid fa-list-check"></i>Checklist</li>
-            <li class="nav-tab" onclick="switchView('posts-view', this)"><i class="fa-solid fa-message"></i>Posts</li>
-        </ul>
+        <div class="nav-right-container">
+            <ul class="nav-menu">
+                <li class="nav-tab active" onclick="switchView('home-view', this)"><i class="fa-solid fa-house"></i>Home</li>
+                <li class="nav-tab" onclick="switchView('itinerary-view', this)"><i class="fa-solid fa-map-location-dot"></i>Itinerary</li>
+                <li class="nav-tab" onclick="switchView('checklist-view', this)"><i class="fa-solid fa-list-check"></i>Checklist</li>
+                <li class="nav-tab" onclick="switchView('posts-view', this)"><i class="fa-solid fa-message"></i>Posts</li>
+            </ul>
+            <button id="nav-auth-trigger" class="nav-auth-btn" onclick="handleNavAuthClick()">Sign In</button>
+        </div>
     </nav>
 
     <div class="app-viewport">
@@ -484,13 +576,16 @@
                 <div class="timer-box"><div class="val" id="time-s">00</div><div class="lbl">Secs</div></div>
             </div>
 
-            <div style="display: flex; gap: 1rem; flex-direction: column; align-items: center;">
+            <div style="display: flex; gap: 1rem; flex-direction: column; align-items: center; width: 100%;">
+                <button id="home-long-auth-btn" class="btn-action" style="width: 100%; max-width: 480px; margin-bottom: 0.5rem; background: linear-gradient(90deg, #a855f7, #6366f1);" onclick="toggleAuthModal(true)">
+                    <i class="fa-solid fa-user-lock"></i> Authorize Device Handle
+                </button>
+
                 <div style="display: flex; gap: 1rem; justify-content: center;">
                     <button class="btn-action" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1);" onclick="document.querySelectorAll('.nav-tab')[1].click()">Itinerary</button>
                     <button class="btn-action" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1);" onclick="document.querySelectorAll('.nav-tab')[2].click()">Checklist</button>
                     <button class="btn-action" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1);" onclick="document.querySelectorAll('.nav-tab')[3].click()">Posts</button>
                 </div>
-                <button id="logout-btn" class="btn-action" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.8rem; padding: 0.5rem 1.5rem; margin-top: 0.5rem; display: none;" onclick="logout()">Sign Out</button>
             </div>
         </div>
 
@@ -564,7 +659,7 @@
                             <option value="Stanley">Stanley</option>
                         </select>
                         <input type="password" id="auth-passphrase" class="auth-input" style="width: 220px; letter-spacing: 6px;" placeholder="••••" maxlength="4" pattern="[0-9]*" inputmode="numeric">
-                        <button class="btn-action" style="width: 220px;" onclick="authenticateUser()">Authorize</button>
+                        <button class="btn-action" style="width: 220px;" onclick="authenticateUser('checklist')">Authorize</button>
                     </div>
                 </div>
 
@@ -604,10 +699,23 @@
                 <div class="glass-card" style="display:flex; flex-direction:column;">
                     <h3 style="margin-top:0; color:#a855f7;">Write Post</h3>
                     <div id="composer-author-badge" style="background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); padding: 0.6rem; border-radius: 8px; margin-bottom: 1rem; text-align: center; font-weight: 600;">
-                        Posting as: Guest
+                        Posting Restricted (Sign-in Required)
                     </div>
-                    <textarea id="post-text-input" class="composer-textarea" placeholder="Type an update to the crew..."></textarea>
-                    <button class="btn-action" style="width: 100%;" onclick="addCustomPost()">Publish</button>
+                    
+                    <div id="wall-inline-auth" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 1.25rem; text-align: center; margin-bottom: 1rem; display: flex; flex-direction: column; align-items: center;">
+                        <p style="margin: 0 0 1rem 0; font-size: 0.85rem; color: #94a3b8;">Sign in here to post to the live feed:</p>
+                        <select id="wall-username" class="auth-input" style="width: 100%; max-width: 200px; margin-bottom: 0.75rem; font-size: 0.9rem; padding: 0.5rem;">
+                            <option value="Alex">Alex</option>
+                            <option value="Archie">Archie</option>
+                            <option value="Joseph">Joseph</option>
+                            <option value="Stanley">Stanley</option>
+                        </select>
+                        <input type="password" id="wall-passphrase" class="auth-input" style="width: 100%; max-width: 200px; margin-bottom: 0.75rem; font-size: 0.9rem; padding: 0.5rem; letter-spacing: 4px;" placeholder="••••" maxlength="4" pattern="[0-9]*" inputmode="numeric">
+                        <button class="btn-action" style="width: 100%; max-width: 200px; font-size: 0.85rem; padding: 0.5rem;" onclick="authenticateUser('wall')">Unlock Composer</button>
+                    </div>
+
+                    <textarea id="post-text-input" class="composer-textarea" placeholder="Type an update to the crew..." disabled></textarea>
+                    <button id="publish-post-btn" class="btn-action" style="width: 100%;" onclick="addCustomPost()" disabled>Publish</button>
                 </div>
                 <div class="glass-card" style="display:flex; flex-direction:column;">
                     <h3 style="margin-top:0; color:#a855f7;">Live Feed</h3>
@@ -621,7 +729,6 @@
 </div>
 
 <script>
-    // Connected successfully to your core European project node link instance endpoint
     const FIREBASE_DB_URL = "https://bhktf-portal-default-rtdb.europe-west1.firebasedatabase.app/";
 
     const ROSTER_PASSKEYS = {
@@ -642,7 +749,23 @@
         tabElement.classList.add('active');
     }
 
-    // Dynamic Live Countdown Engine configured to match Sunday 5th July 15:00 departure
+    function toggleAuthModal(show) {
+        const modal = document.getElementById("auth-modal");
+        modal.style.display = show ? "flex" : "none";
+        if (show) {
+            document.getElementById("modal-passphrase").value = "";
+        }
+    }
+
+    function handleNavAuthClick() {
+        if (activeUser) {
+            logout();
+        } else {
+            toggleAuthModal(true);
+        }
+    }
+
+    // Dynamic Live Countdown Engine
     const departureTime = new Date("July 5, 2026 15:00:00").getTime();
     function runtimeEngine() {
         const now = new Date().getTime();
@@ -664,53 +787,106 @@
     runtimeEngine();
     setInterval(runtimeEngine, 1000);
 
-    // Authentication Layer Configuration
+    // Dynamic UI Synchronization State Machine
     function checkAuthenticationState() {
         const lockLayer = document.getElementById("checklist-lock-layer");
         const contentLayer = document.getElementById("checklist-content-layer");
         const authorBadge = document.getElementById("composer-author-badge");
         const welcomeUser = document.getElementById("welcome-user");
-        const logoutBtn = document.getElementById("logout-btn");
+        
+        const navAuthTrigger = document.getElementById("nav-auth-trigger");
+        const homeLongAuthBtn = document.getElementById("home-long-auth-btn");
+        const wallInlineAuth = document.getElementById("wall-inline-auth");
+        const postTextInput = document.getElementById("post-text-input");
+        const publishPostBtn = document.getElementById("publish-post-btn");
 
         if (activeUser) {
-            lockLayer.style.display = "none";
-            contentLayer.classList.remove("lock-blur");
+            // Lock out individual access blocks
+            if (lockLayer) lockLayer.style.display = "none";
+            if (contentLayer) contentLayer.classList.remove("lock-blur");
+            
+            // Adjust Composer Text Engine fields
             authorBadge.innerText = `Posting as: ${activeUser}`;
             authorBadge.style.color = "#a855f7";
+            postTextInput.removeAttribute("disabled");
+            publishPostBtn.removeAttribute("disabled");
+            wallInlineAuth.style.display = "none";
+
+            // Top navigation and index layouts updates
             welcomeUser.innerText = `Logged in as ${activeUser}`;
-            logoutBtn.style.display = "block";
+            navAuthTrigger.innerText = "Sign Out";
+            navAuthTrigger.style.borderColor = "rgba(239, 68, 68, 0.4)";
+            navAuthTrigger.style.color = "#ef4444";
+            
+            homeLongAuthBtn.innerText = `Sign Out (${activeUser})`;
+            homeLongAuthBtn.style.background = "rgba(239, 68, 68, 0.1)";
+            homeLongAuthBtn.style.border = "1px solid rgba(239, 68, 68, 0.3)";
+            homeLongAuthBtn.style.color = "#ef4444";
+            homeLongAuthBtn.onclick = logout;
             
             document.getElementById("personal-checklist-title").innerHTML = `<i class="fa-solid fa-suitcase"></i> ${activeUser}'s Checklist`;
             loadCheckState();
         } else {
-            lockLayer.style.display = "flex";
-            contentLayer.classList.add("lock-blur");
+            if (lockLayer) lockLayer.style.display = "flex";
+            if (contentLayer) contentLayer.classList.add("lock-blur");
+            
             authorBadge.innerText = "Posting Restricted (Sign-in Required)";
             authorBadge.style.color = "#ef4444";
+            postTextInput.setAttribute("disabled", "true");
+            publishPostBtn.setAttribute("disabled", "true");
+            wallInlineAuth.style.display = "flex";
+
             welcomeUser.innerText = "";
-            logoutBtn.style.display = "none";
+            navAuthTrigger.innerText = "Sign In";
+            navAuthTrigger.style.borderColor = "rgba(168, 85, 247, 0.3)";
+            navAuthTrigger.style.color = "#a855f7";
+            
+            homeLongAuthBtn.innerHTML = `<i class="fa-solid fa-user-lock"></i> Authorize Device Handle`;
+            homeLongAuthBtn.style.background = "linear-gradient(90deg, #a855f7, #6366f1)";
+            homeLongAuthBtn.style.border = "none";
+            homeLongAuthBtn.style.color = "#000";
+            homeLongAuthBtn.onclick = function() { toggleAuthModal(true); };
         }
         syncFetchCloudPosts();
     }
 
-    function authenticateUser() {
-        const selectedName = document.getElementById("auth-username").value;
-        const suppliedPass = document.getElementById("auth-passphrase").value;
+    function authenticateUser(sourceContext) {
+        let selectedName, suppliedPass;
+
+        if (sourceContext === 'checklist') {
+            selectedName = document.getElementById("auth-username").value;
+            suppliedPass = document.getElementById("auth-passphrase").value;
+        } else if (sourceContext === 'wall') {
+            selectedName = document.getElementById("wall-username").value;
+            suppliedPass = document.getElementById("wall-passphrase").value;
+        } else { // Modal target source window configuration mapping
+            selectedName = document.getElementById("modal-username").value;
+            suppliedPass = document.getElementById("modal-passphrase").value;
+        }
 
         if (ROSTER_PASSKEYS[selectedName] === suppliedPass) {
             activeUser = selectedName;
             localStorage.setItem("bhktf_active_user", activeUser);
+            
+            // Clean out target reference inputs safely
             document.getElementById("auth-passphrase").value = "";
+            document.getElementById("modal-passphrase").value = "";
+            document.getElementById("wall-passphrase").value = "";
+            
+            toggleAuthModal(false);
             checkAuthenticationState();
         } else {
             alert("Invalid 4-Digit Passphrase! Try again.");
             document.getElementById("auth-passphrase").value = "";
+            document.getElementById("modal-passphrase").value = "";
+            document.getElementById("wall-passphrase").value = "";
         }
     }
 
     function logout() {
         activeUser = null;
         localStorage.removeItem("bhktf_active_user");
+        toggleAuthModal(false);
         checkAuthenticationState();
     }
 
@@ -731,7 +907,6 @@
         localStorage.setItem(`bhktf_checklist_${activeUser}`, JSON.stringify(state));
     }
 
-    // LocalStorage loader
     function loadCheckState() {
         if (!activeUser) return;
         const memory = JSON.parse(localStorage.getItem(`bhktf_checklist_${activeUser}`));
@@ -750,9 +925,7 @@
         }
     }
 
-    // ==========================================================================
     // CLOUD PERSISTENCE SYNC ENGINE (Firebase REST Interface Integration)
-    // ==========================================================================
     function syncFetchCloudPosts() {
         if (FIREBASE_DB_URL.includes("YOUR-PROJECT-ID-HERE")) return;
         
