@@ -1,0 +1,42 @@
+baseURL = "https://yourusername.github.io/" # Change this to your GitHub Pages URL
+languageCode = "en-us"
+title = "My Digital Garden"
+theme = "PaperMod"
+
+[params]
+    env = "production"
+    title = "My Digital Garden"
+    description = "Welcome to my personal corner of the internet."
+    
+    # Appearance
+    defaultTheme = "auto" # automatically switches dark/light mode
+    ShowReadingTime = true
+    ShowShareButtons = true
+    ShowCodeCopyButtons = true
+
+    # Home Page Profile Mode
+    [params.profileMode]
+        enabled = true
+        title = "Hi there, I'm [Your Name] 👋"
+        subtitle = "Developer, writer, and creator. Building things with code."
+        imageUrl = "https://images.unsplash.com/photo-1534528741775-53994a69daeb" # Placeholder bio pic
+        imageWidth = 120
+        imageHeight = 120
+        
+        [[params.profileMode.buttons]]
+            name = "Read my Blog"
+            url = "posts/"
+        [[params.profileMode.buttons]]
+            name = "GitHub"
+            url = "https://github.com/yourusername"
+
+# Top Navigation Menu
+[[menu.main]]
+    name = "Posts"
+    url = "posts/"
+    weight = 10
+
+[[menu.main]]
+    name = "Tags"
+    url = "tags/"
+    weight = 20
